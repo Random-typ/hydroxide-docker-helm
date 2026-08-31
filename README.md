@@ -41,7 +41,7 @@ cd hydroxide
 ```
 #### Install with helm
 ```bash
-helm install hydroxide ./helm/hydroxide
+helm install hydroxide ./helm/hydroxide -n hydroxide --create-namespace
 ```
 
 ### 2. Login & Authenticate Interactively
