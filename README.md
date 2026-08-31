@@ -47,7 +47,7 @@ helm install hydroxide ./helm/hydroxide -n hydroxide --create-namespace
 ### 2. Login & Authenticate Interactively
 Execute the `auth` command inside the running pod:
 ```bash
-kubectl exec -it deployment/hydroxide -- hydroxide auth <your-protonmail-username>
+kubectl exec -it deployment/hydroxide -n hydroxide -- hydroxide auth <your-protonmail-username>
 ```
 
 Complete the interactive login prompt. Credentials will persist across pod restarts using the `PersistentVolumeClaim`.
@@ -75,5 +75,5 @@ docker compose exec hydroxide hydroxide status
 
 **Kubernetes:**
 ```bash
-kubectl exec deployment/hydroxide -- hydroxide status
+kubectl exec deployment/hydroxide -n hydroxide -- hydroxide status
 ```
