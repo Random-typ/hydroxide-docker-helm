@@ -31,6 +31,15 @@ The credentials and state are saved automatically to the `hydroxide-data` persis
 ## ☸️ Kubernetes (Helm) Setup
 
 ### 1. Install the Helm Chart
+#### Clone Repo
+```bash
+git clone https://github.com/Random-typ/hydroxide-docker-helm.git
+```
+#### Enter hydroxide directory
+```bash
+cd hydroxide
+```
+#### Install with helm
 ```bash
 helm install hydroxide ./helm/hydroxide
 ```
