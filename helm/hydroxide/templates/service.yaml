@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "hydroxide.fullname" . }}
+  labels:
+    {{- include "hydroxide.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.imapPort }}
+      targetPort: imap
+      protocol: TCP
+      name: imap
+    - port: {{ .Values.service.smtpPort }}
+      targetPort: smtp
+      protocol: TCP
+      name: smtp
+    - port: {{ .Values.service.carddavPort }}
+      targetPort: carddav
+      protocol: TCP
+      name: carddav
+  selector:
+    {{- include "hydroxide.selectorLabels" . | nindent 4 }}

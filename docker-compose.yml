@@ -1,0 +1,18 @@
+services:
+  hydroxide:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: hydroxide:latest
+    container_name: hydroxide
+    restart: unless-stopped
+    ports:
+      - "1143:1143" # IMAP
+      - "1025:1025" # SMTP
+      - "8080:8080" # CardDAV
+    volumes:
+      - hydroxide-data:/root/.config/hydroxide
+
+volumes:
+  hydroxide-data:
+    driver: local
