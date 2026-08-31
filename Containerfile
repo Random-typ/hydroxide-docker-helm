@@ -2,7 +2,8 @@
 FROM golang:alpine AS builder
 
 WORKDIR /src
-COPY hydroxide/ .
+RUN apk add --no-cache git \
+	&& git clone https://github.com/Random-typ/hydroxide.git .
 RUN CGO_ENABLED=0 go build -o /bin/hydroxide ./cmd/hydroxide
 
 # Runtime stage
