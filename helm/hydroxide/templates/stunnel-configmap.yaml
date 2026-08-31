@@ -1,0 +1,28 @@
+{{- if .Values.tls.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hydroxide.fullname" . }}-stunnel
+  labels:
+    {{- include "hydroxide.labels" . | nindent 4 }}
+data:
+  stunnel.conf: |
+    foreground = yes
+    pid =
+
+    {{ if .Values.tls.imaps.enabled }}
+    [imaps]
+    accept = 0.0.0.0:{{ .Values.tls.imaps.containerPort }}
+    connect = 127.0.0.1:1143
+    cert = /certs/tls.crt
+    key = /certs/tls.key
+
+    {{ end }}
+    {{ if .Values.tls.smtps.enabled }}
+    [smtps]
+    accept = 0.0.0.0:{{ .Values.tls.smtps.containerPort }}
+    connect = 127.0.0.1:1025
+    cert = /certs/tls.crt
+    key = /certs/tls.key
+    {{ end }}
+{{- end }}

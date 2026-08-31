@@ -20,6 +20,17 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.tls.enabled }}
+          args:
+            - hydroxide
+            - -imap-host
+            - 127.0.0.1
+            - -smtp-host
+            - 127.0.0.1
+            - -carddav-host
+            - 0.0.0.0
+            - serve
+          {{- end }}
           ports:
             - name: imap
               containerPort: 1143
@@ -35,6 +46,33 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /root/.config/hydroxide
+        {{- if .Values.tls.enabled }}
+        - name: stunnel
+          image: "{{ .Values.tls.image.repository }}:{{ .Values.tls.image.tag }}"
+          imagePullPolicy: {{ .Values.tls.image.pullPolicy }}
+          args:
+            - /etc/stunnel/stunnel.conf
+          ports:
+            {{- if .Values.tls.imaps.enabled }}
+            - name: imaps
+              containerPort: {{ .Values.tls.imaps.containerPort }}
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.tls.smtps.enabled }}
+            - name: smtps
+              containerPort: {{ .Values.tls.smtps.containerPort }}
+              protocol: TCP
+            {{- end }}
+          resources:
+            {{- toYaml .Values.tls.resources | nindent 12 }}
+          volumeMounts:
+            - name: stunnel-config
+              mountPath: /etc/stunnel
+              readOnly: true
+            - name: tls-cert
+              mountPath: /certs
+              readOnly: true
+        {{- end }}
       volumes:
         - name: data
           {{- if .Values.persistence.enabled }}
@@ -43,6 +81,14 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
+        {{- if .Values.tls.enabled }}
+        - name: stunnel-config
+          configMap:
+            name: {{ include "hydroxide.fullname" . }}-stunnel
+        - name: tls-cert
+          secret:
+            secretName: {{ required "tls.certificateSecretName is required when tls.enabled=true" .Values.tls.certificateSecretName }}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -1,0 +1,32 @@
+services:
+  hydroxide:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: hydroxide:latest
+    container_name: hydroxide
+    restart: unless-stopped
+    expose:
+      - "1143" # IMAP, private to the Compose network
+      - "1025" # SMTP, private to the Compose network
+    ports:
+      - "8080:8080" # CardDAV
+    volumes:
+      - hydroxide-data:/root/.config/hydroxide
+
+  stunnel:
+    image: docker.io/stunnel/stunnel:latest
+    container_name: hydroxide-stunnel
+    restart: unless-stopped
+    depends_on:
+      - hydroxide
+    ports:
+      - "993:1993" # IMAPS
+      - "465:1465" # SMTPS
+    volumes:
+      - ./stunnel/stunnel.conf:/etc/stunnel/stunnel.conf:ro
+      - ./certs:/certs:ro
+
+volumes:
+  hydroxide-data:
+    driver: local

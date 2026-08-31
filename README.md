@@ -26,6 +26,15 @@ Once authenticated, Hydroxide will print your generated **Bridge Password**. Sto
 
 The credentials and state are saved automatically to the `hydroxide-data` persistent volume (`/root/.config/hydroxide`).
 
+### Optional IMAP/SMTP TLS Sidecar
+Hydroxide serves IMAP and SMTP without TLS. To run TLS-wrapped IMAP and SMTP with Docker Compose, place your certificate and key at `certs/tls.crt` and `certs/tls.key`, then start the TLS compose file:
+
+```bash
+docker compose -f docker-compose.tls.yml up -d
+```
+
+This exposes IMAPS on port `993`, SMTPS on port `465`, and CardDAV on port `8080`. The plaintext IMAP and SMTP ports are only exposed inside the Compose network.
+
 ---
 
 ## ☸️ Kubernetes (Helm) Setup
@@ -52,6 +61,36 @@ kubectl exec -it deployment/hydroxide -n hydroxide -- hydroxide auth <your-proto
 
 Complete the interactive login prompt. Credentials will persist across pod restarts using the `PersistentVolumeClaim`.
 
+### Optional IMAP/SMTP TLS Sidecar
+Hydroxide serves IMAP and SMTP without TLS. The Helm chart can add a `stunnel` sidecar that terminates TLS and forwards traffic to Hydroxide over `localhost` inside the pod.
+
+Create or provide a Kubernetes TLS Secret containing `tls.crt` and `tls.key`, then enable the sidecar:
+
+```bash
+helm upgrade --install hydroxide ./helm/hydroxide -n hydroxide --create-namespace \
+  --set tls.enabled=true \
+  --set tls.certificateSecretName=hydroxide-mail-tls
+```
+
+This exposes IMAPS on port `993` and SMTPS on port `465` by default. The plaintext IMAP and SMTP ports remain private to the pod when TLS is enabled.
+
+cert-manager works with this setup. Set `spec.secretName` on your cert-manager `Certificate` to the same value used for `tls.certificateSecretName`:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: hydroxide-mail
+  namespace: hydroxide
+spec:
+  secretName: hydroxide-mail-tls
+  dnsNames:
+    - mail.example.com
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+```
+
 ---
 
 ## 🔌 Exposed Ports
@@ -61,6 +100,13 @@ Complete the interactive login prompt. Credentials will persist across pod resta
 | **IMAP** | `1143` | ProtonMail IMAP server |
 | **SMTP** | `1025` | ProtonMail SMTP server |
 | **CardDAV** | `8080` | ProtonMail CardDAV server |
+
+When `tls.enabled=true`, IMAP and SMTP are exposed as encrypted sidecar ports instead:
+
+| Protocol | Service Port | Description |
+| :--- | :--- | :--- |
+| **IMAPS** | `993` | TLS-wrapped IMAP via stunnel |
+| **SMTPS** | `465` | TLS-wrapped SMTP via stunnel |
 
 ---
 

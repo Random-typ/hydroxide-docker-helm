@@ -7,6 +7,20 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
+    {{- if .Values.tls.enabled }}
+    {{- if .Values.tls.imaps.enabled }}
+    - port: {{ .Values.tls.imaps.servicePort }}
+      targetPort: imaps
+      protocol: TCP
+      name: imaps
+    {{- end }}
+    {{- if .Values.tls.smtps.enabled }}
+    - port: {{ .Values.tls.smtps.servicePort }}
+      targetPort: smtps
+      protocol: TCP
+      name: smtps
+    {{- end }}
+    {{- else }}
     - port: {{ .Values.service.imapPort }}
       targetPort: imap
       protocol: TCP
@@ -15,6 +29,7 @@ spec:
       targetPort: smtp
       protocol: TCP
       name: smtp
+    {{- end }}
     - port: {{ .Values.service.carddavPort }}
       targetPort: carddav
       protocol: TCP

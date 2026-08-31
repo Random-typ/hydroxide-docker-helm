@@ -12,6 +12,24 @@ service:
   smtpPort: 1025
   carddavPort: 8080
 
+tls:
+  enabled: false
+  image:
+    repository: docker.io/stunnel/stunnel
+    tag: latest
+    pullPolicy: IfNotPresent
+  # Name of a kubernetes.io/tls Secret containing tls.crt and tls.key.
+  certificateSecretName: ""
+  imaps:
+    enabled: true
+    servicePort: 993
+    containerPort: 1993
+  smtps:
+    enabled: true
+    servicePort: 465
+    containerPort: 1465
+  resources: {}
+
 persistence:
   enabled: true
   storageClass: ""
