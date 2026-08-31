@@ -1,5 +1,5 @@
 image:
-  repository: hydroxide
+  repository: ghcr.io/random-typ/hydroxide-captcha-fix
   tag: latest
   pullPolicy: IfNotPresent
 
